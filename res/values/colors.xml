@@ -13,7 +13,14 @@
     limitations under the License.
 -->
 <resources>
+      <!-- Material -->
       <color name="primary">#212121</color>
       <color name="primary_dark">#424242</color>
-      <color name="accent">#FAFAFA</color>
+      <color name="accent">#fafafa</color>
+
+      <!-- FAB -->
+      <color name="fab">#009688</color>
+      <color name="floating_action_button_touch_tint">#4DB6AC</color>
+      <color name="floating_action_button_icon_color">#fafafa</color>
+
 </resources>
