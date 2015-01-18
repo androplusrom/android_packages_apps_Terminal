@@ -18,6 +18,7 @@ package com.android.terminal;
 
 import static com.android.terminal.Terminal.TAG;
 
+import android.animation.LayoutTransition;
 import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Context;
@@ -38,6 +39,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toolbar;
 
 /**
  * Activity that displays all {@link Terminal} instances running in a bound
@@ -149,13 +151,13 @@ public class TerminalActivity extends Activity {
         }
     };
 
-    private final View.OnSystemUiVisibilityChangeListener mUiVisibilityChangeListener = new View.OnSystemUiVisibilityChangeListener() {
+    private final View.OnSystemUiVisibilityChangeListener mUiVisibilityChangeListener =
+            new View.OnSystemUiVisibilityChangeListener() {
         @Override
         public void onSystemUiVisibilityChange(int visibility) {
             if ((visibility & View.SYSTEM_UI_FLAG_FULLSCREEN) != 0) {
                 getActionBar().hide();
-            }
-            else {
+            } else {
                 getActionBar().show();
             }
         }
@@ -163,26 +165,21 @@ public class TerminalActivity extends Activity {
 
     public void updatePreferences() {
         SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(this);
-        boolean bval;
-        bval = sp.getBoolean(TerminalSettingsActivity.KEY_FULLSCREEN_MODE, false);
-        if (bval) {
+        if (sp.getBoolean(TerminalSettingsActivity.KEY_FULLSCREEN_MODE, false)) {
             getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_FULLSCREEN);
             getActionBar().hide();
-        }
-        else {
+        } else {
             getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_VISIBLE);
             getActionBar().show();
         }
 
-        String sval;
-        sval = sp.getString(TerminalSettingsActivity.KEY_SCREEN_ORIENTATION, "automatic");
-        if (sval.equals("automatic")) {
+        final String orientation = sp.getString(TerminalSettingsActivity.KEY_SCREEN_ORIENTATION,
+                "automatic");
+        if (orientation.equals("automatic")) {
             setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR);
-        }
-        if (sval.equals("portrait")) {
+        } else if (orientation.equals("portrait")) {
             setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-        }
-        if (sval.equals("landscape")) {
+        } else if (orientation.equals("landscape")) {
             setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
         }
 
@@ -202,6 +199,9 @@ public class TerminalActivity extends Activity {
 
         setContentView(R.layout.activity);
 
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        setActionBar(toolbar);
+
         mPager = (ViewPager) findViewById(R.id.pager);
         mTitles = (PagerTitleStrip) findViewById(R.id.titles);
 
@@ -209,20 +209,22 @@ public class TerminalActivity extends Activity {
 
         View decorView = getWindow().getDecorView();
         decorView.setOnSystemUiVisibilityChangeListener(mUiVisibilityChangeListener);
+
+        ViewGroup root = (ViewGroup) findViewById(R.id.root);
+        root.getLayoutTransition().enableTransitionType(LayoutTransition.CHANGING);
     }
 
     @Override
     protected void onStart() {
         super.onStart();
-        updatePreferences();
-        bindService(
-                new Intent(this, TerminalService.class), mServiceConn, Context.BIND_AUTO_CREATE);
+        bindService(new Intent(this, TerminalService.class),
+                mServiceConn, Context.BIND_AUTO_CREATE);
     }
 
     @Override
     protected void onResume() {
-        super.onResume();
         updatePreferences();
+        super.onResume();
     }
 
     @Override
